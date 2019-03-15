@@ -9,7 +9,7 @@ function runAnalysis() {
   const [testSet, trainingSet] = splitDataset(outputs, testSetSize);
   _.range(1,20).forEach(k => {
     const accuracy = _.chain(testSet)
-    .filter(testPoint => knn(trainingSet, testPoint[0], k) === testPoint[3])
+    .filter(testPoint => knn(trainingSet, _.initial(testPoint), k) === testPoint[3])
     .size()
     .divide(testSetSize)
     .value();
@@ -22,7 +22,12 @@ function runAnalysis() {
 
 function knn(data, point, k){
   const bucket = _.chain(data)
-	.map(row => [distance(row[0], point), row[3]])
+  .map(row => {
+    return [
+      distance(_.initial(row), point), 
+      _.last(row)
+    ];
+  })
 	.sortBy(row => row[0])
 	.slice(0, k)
 	.countBy(row => row[1])
@@ -37,7 +42,11 @@ function knn(data, point, k){
 }
 
 function distance(pointA, pointB) {
-  return Math.abs(pointA - pointB);
+  return _.chain(pointA)
+    .zip(pointB)
+    .map(([a, b]) => (a -b) ** 2)
+    .sum()
+    .value() ** .5;
 }
 
 function splitDataset (data, testCount){
