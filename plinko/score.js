@@ -1,26 +1,26 @@
 const outputs = [];
-const k = 3;
-
 
 function onScoreUpdate(dropPosition, bounciness, size, bucketLabel) {
   outputs.push([dropPosition, bounciness, size, bucketLabel]);
 }
 
 function runAnalysis() {
-  const testSetSize = 10;
+  const testSetSize = 100;
   const [testSet, trainingSet] = splitDataset(outputs, testSetSize);
-  
-  const accuracy = _.chain(testSet)
-    .filter(testPoint => knn(trainingSet, testPoint[0]) === testPoint[3])
+  _.range(1,20).forEach(k => {
+    const accuracy = _.chain(testSet)
+    .filter(testPoint => knn(trainingSet, testPoint[0], k) === testPoint[3])
     .size()
     .divide(testSetSize)
     .value();
 
-  console.log('Accuracy:', accuracy);
+    console.log('For k ', k, ' accuracy:', accuracy);
+    
+  });
 }
 
 
-function knn(data, point){
+function knn(data, point, k){
   const bucket = _.chain(data)
 	.map(row => [distance(row[0], point), row[3]])
 	.sortBy(row => row[0])
